@@ -60,6 +60,7 @@ export const ExportableResult = React.forwardRef<HTMLDivElement, ExportableResul
       vietinbank: '/logos-bank/vietinbank.jpg',
       vpbank: '/logos-bank/vpbank.jpg',
       hsbc: '/logos-bank/hsbc.png',
+      shinhanbank: '/logos-bank/shinhanbank.jpg',
       standardchartered: '/logos-bank/standardchartered.png',
     };
     const bankNameMap: { [key: string]: string } = {
@@ -73,6 +74,7 @@ export const ExportableResult = React.forwardRef<HTMLDivElement, ExportableResul
       vib: 'VIB',
       vietinbank: 'VietinBank',
       vpbank: 'VPBank',
+      shinhanbank: 'Shinhan Bank',
       hsbc: 'HSBC',
       standardchartered: 'Standard Chartered',
     };
@@ -167,6 +169,7 @@ export const ExportableResult = React.forwardRef<HTMLDivElement, ExportableResul
             </tbody>
             </table>
         </div>
+        <div className="mt-2 text-xs italic text-gray-500 text-right">*Công cụ tính lãi suất vay ngân hàng: BankerTool.Online</div>
       </div>
     )
   }

@@ -96,23 +96,25 @@ export default function BankLoanCalculator() {
   const searchParams = useSearchParams();
 
   const bankLogoMap: { [key: string]: string } = {
+    'standardchartered': '/logos-bank/standardchartered.png',
+    'shinhanbank': '/logos-bank/shinhanbank.jpg',
     'hsbc': '/logos-bank/hsbc.png',
+    'uob': '/logos-bank/uob.jpg',
+    'vpbank': '/logos-bank/vpbank.jpg',
+    'hdbank': '/logos-bank/hdbank.jpg',
     'vib': '/logos-bank/vib.jpg',
     'vietinbank': '/logos-bank/vietinbank.jpg',
     'acb': '/logos-bank/acb.jpeg',
-    'standardchartered': '/logos-bank/standardchartered.png',
     'ocb': '/logos-bank/ocb.jpg',
     'tpbank': '/logos-bank/tpbank.jpg',
     'mbbank': '/logos-bank/mbbank.jpg',
-    'vpbank': '/logos-bank/vpbank.jpg',
-    'hdbank': '/logos-bank/hdbank.jpg',
     'techcombank': '/logos-bank/techcombank.jpg',
-    'uob': '/logos-bank/uob.jpg',
   };
 
   // Map key chuẩn hóa sang tên đẹp
   const bankNameMap: { [key: string]: string } = {
     acb: 'ACB',
+    shinhanbank: 'Shinhan Bank',
     hdbank: 'HDBank',
     mbbank: 'MB Bank',
     ocb: 'OCB',
