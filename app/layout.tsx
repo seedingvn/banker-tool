@@ -4,6 +4,8 @@ import type { Metadata, Viewport } from "next"
 import "./globals.css"
 import SchemaMarkup from '@/components/SchemaMarkup';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -126,6 +128,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <ThemeProvider>
           <SchemaMarkup />
           {children}
+          <SpeedInsights />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
