@@ -203,7 +203,7 @@ export default function BankLoanCalculator() {
     }
   }, [searchParams]);
 
-  // Sửa hàm calculateLoan để dùng lại hàm trên với giá trị từ state
+  // Sửa hàm calculateLoan để giữ vị trí scroll khi cập nhật URL
   const calculateLoan = () => {
     const calc = calculateLoanFromParams(
       loanAmount.replace(/[^\d]/g, ""),
@@ -214,7 +214,7 @@ export default function BankLoanCalculator() {
     if (!calc) return;
     setCalculation(calc);
     setShowResults(true);
-    // Cập nhật URL parameter
+    // Cập nhật URL parameter, giữ nguyên vị trí scroll
     const params = new URLSearchParams({
       amount: loanAmount.replace(/[^\d]/g, ""),
       rate: interestRate,
@@ -224,7 +224,7 @@ export default function BankLoanCalculator() {
       banker: bankerName,
       contact: contactInfo,
     });
-    router.replace(`?${params.toString()}`);
+    router.replace(`?${params.toString()}`, { scroll: false });
     // Scroll to results section
     setTimeout(() => {
       document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth" });
@@ -241,6 +241,7 @@ export default function BankLoanCalculator() {
   const handleDownloadImage = async () => {
     if (!hiddenResultRef.current) {
       alert("Không tìm thấy nội dung để tải.");
+      console.error("hiddenResultRef.current is null");
       return;
     }
     try {
@@ -262,9 +263,20 @@ export default function BankLoanCalculator() {
       link.href = dataUrl;
       link.click();
     } catch (error) {
-      console.error("Oops, something went wrong!", error);
-      alert("Đã có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại.");
+      console.error("Oops, something went wrong when exporting image!", error);
+      alert("Đã có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại.\n" + (error instanceof Error ? error.message : ''));
     }
+  };
+
+  // Đặt tên file export giống logic file ảnh
+  const clean = (str: string) => str?.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/đ/g, "d") || "";
+  const formatMoney = (str: string) => {
+    const num = parseInt(str.replace(/[^\d]/g, ""), 10);
+    if (!num) return "";
+    if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
+    if (num >= 1000000) return Math.round(num/1000000) + "tr";
+    if (num >= 1000) return Math.round(num/1000) + "k";
+    return num+"";
   };
 
   const handleExportSheets = () => {
@@ -283,7 +295,9 @@ export default function BankLoanCalculator() {
     const ws = XLSX.utils.aoa_to_sheet(wsData)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Lich tra no")
-    XLSX.writeFile(wb, "lich-tra-no-vay-ngan-hang.xlsx")
+    // Đặt tên file theo logic giống ảnh
+    const fileName = `${clean(bankerName)}-${clean(bank)}-${loanTerm}thang-${formatMoney(loanAmount)}.xlsx`;
+    XLSX.writeFile(wb, fileName)
   }
 
   const handleCopyURL = () => {
@@ -1263,7 +1277,7 @@ export default function BankLoanCalculator() {
       </section>
 
       {/* DOM ẩn để export ảnh/PDF */}
-      <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+      <div style={{ opacity: 0, pointerEvents: 'none', position: "absolute", left: 0, top: 0, width: '100vw', height: 'auto', zIndex: -1 }}>
         <ExportableResult
           ref={hiddenResultRef}
           calculation={calculation}
