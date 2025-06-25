@@ -46,6 +46,7 @@ import * as XLSX from "xlsx"
 import { toPng } from 'html-to-image';
 import { ExportableResult } from '@/components/ui/ExportableResult';
 import Image from 'next/image';
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface LoanCalculation {
   monthlyPayment: number
@@ -67,6 +68,13 @@ const bankLogos = {
   Techcombank: "🏢",
 }
 
+// Định nghĩa cho window.dataLayer để tránh lỗi TS
+declare global {
+  interface Window {
+    dataLayer: any[];
+  }
+}
+
 export default function BankLoanCalculator() {
   const [loanAmount, setLoanAmount] = useState("")
   const [interestRate, setInterestRate] = useState("")
@@ -84,6 +92,8 @@ export default function BankLoanCalculator() {
   const [copied, setCopied] = useState(false)
   const [month, setMonth] = useState<number | null>(null)
   const [year, setYear] = useState<number | null>(null)
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const bankLogoMap: { [key: string]: string } = {
     'HSBC': '/logos-bank/hsbc.png',
@@ -112,29 +122,23 @@ export default function BankLoanCalculator() {
     setLoanAmount(formatted)
   }
 
-  const calculateLoan = () => {
-    const principal = Number.parseFloat(loanAmount.replace(/[^\d]/g, ""))
-    const monthlyRate = Number.parseFloat(interestRate) / 100 / 12
-    const months = Number.parseInt(loanTerm)
-
-    if (!principal || !monthlyRate || !months || !loanType) return
-
-    const schedule: LoanCalculation["schedule"] = []
-    let totalInterest = 0
-    let balance = principal
-
-    if (loanType === "equal-payment") {
-      // Trả góp đều
-      const monthlyPayment =
-        (principal * (monthlyRate * Math.pow(1 + monthlyRate, months))) / (Math.pow(1 + monthlyRate, months) - 1)
-
+  // Hàm tính toán nhận parameter đầu vào, trả về calculation object
+  const calculateLoanFromParams = (amount: string, rate: string, term: string, type: string) => {
+    const principal = Number.parseFloat(amount.replace(/[^\d]/g, ""));
+    const monthlyRate = Number.parseFloat(rate) / 100 / 12;
+    const months = Number.parseInt(term);
+    if (!principal || !monthlyRate || !months || !type) return null;
+    const schedule: LoanCalculation["schedule"] = [];
+    let totalInterest = 0;
+    let balance = principal;
+    if (type === "equal-payment") {
+      const monthlyPayment = (principal * (monthlyRate * Math.pow(1 + monthlyRate, months))) / (Math.pow(1 + monthlyRate, months) - 1);
       for (let month = 1; month <= months; month++) {
-        const startingBalance = balance
-        const interestPayment = balance * monthlyRate
-        const principalPayment = monthlyPayment - interestPayment
-        balance -= principalPayment
-        totalInterest += interestPayment
-
+        const startingBalance = balance;
+        const interestPayment = balance * monthlyRate;
+        const principalPayment = monthlyPayment - interestPayment;
+        balance -= principalPayment;
+        totalInterest += interestPayment;
         schedule.push({
           month,
           principal: principalPayment,
@@ -142,19 +146,16 @@ export default function BankLoanCalculator() {
           balance: Math.max(0, balance),
           monthlyPayment,
           startingBalance,
-        })
+        });
       }
     } else {
-      // Dư nợ giảm dần
-      const principalPayment = principal / months
-
+      const principalPayment = principal / months;
       for (let month = 1; month <= months; month++) {
-        const startingBalance = balance
-        const interestPayment = balance * monthlyRate
-        const monthlyPayment = principalPayment + interestPayment
-        balance -= principalPayment
-        totalInterest += interestPayment
-
+        const startingBalance = balance;
+        const interestPayment = balance * monthlyRate;
+        const monthlyPayment = principalPayment + interestPayment;
+        balance -= principalPayment;
+        totalInterest += interestPayment;
         schedule.push({
           month,
           principal: principalPayment,
@@ -162,22 +163,72 @@ export default function BankLoanCalculator() {
           balance: Math.max(0, balance),
           monthlyPayment,
           startingBalance,
-        })
+        });
       }
     }
-
-    setCalculation({
-      monthlyPayment: loanType === "equal-payment" ? schedule[0].monthlyPayment : schedule[0].monthlyPayment,
+    return {
+      monthlyPayment: type === "equal-payment" ? schedule[0].monthlyPayment : schedule[0].monthlyPayment,
       totalInterest,
       totalPayment: principal + totalInterest,
       schedule,
-    })
-    setShowResults(true)
+    };
+  };
 
+  // Sửa useEffect để dùng hàm trên, setCalculation và showResults đúng giá trị, cuộn xuống kết quả
+  useEffect(() => {
+    const amount = searchParams.get("amount");
+    const rate = searchParams.get("rate");
+    const term = searchParams.get("term");
+    const type = searchParams.get("type");
+    const bankParam = searchParams.get("bank");
+    const banker = searchParams.get("banker");
+    const contact = searchParams.get("contact");
+    if (amount && rate && term && type && bankParam && banker && contact) {
+      setLoanAmount(formatCurrencyInput(amount));
+      setInterestRate(rate);
+      setLoanTerm(term);
+      setLoanType(type);
+      setBank(bankParam);
+      setBankerName(banker);
+      setContactInfo(contact);
+      // Tính toán và show kết quả luôn
+      const calc = calculateLoanFromParams(amount, rate, term, type);
+      if (calc) {
+        setCalculation(calc);
+        setShowResults(true);
+        setTimeout(() => {
+          document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth" });
+        }, 300);
+      }
+    }
+  }, [searchParams]);
+
+  // Sửa hàm calculateLoan để dùng lại hàm trên với giá trị từ state
+  const calculateLoan = () => {
+    const calc = calculateLoanFromParams(
+      loanAmount.replace(/[^\d]/g, ""),
+      interestRate,
+      loanTerm,
+      loanType
+    );
+    if (!calc) return;
+    setCalculation(calc);
+    setShowResults(true);
+    // Cập nhật URL parameter
+    const params = new URLSearchParams({
+      amount: loanAmount.replace(/[^\d]/g, ""),
+      rate: interestRate,
+      term: loanTerm,
+      type: loanType,
+      bank: bank,
+      banker: bankerName,
+      contact: contactInfo,
+    });
+    router.replace(`?${params.toString()}`);
     // Scroll to results section
     setTimeout(() => {
-      document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth" })
-    }, 100)
+      document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   }
 
   const formatCurrency = (amount: number) => {
@@ -302,8 +353,10 @@ export default function BankLoanCalculator() {
   return (
     <div className="min-h-screen bg-white font-inter">
       {/* Hero Section */}
-      <BackgroundBeamsWithCollision className="min-h-[60vh] pt-4 md:pt-8 pb-8 md:pb-12">
-        <div className="max-w-6xl mx-auto text-left md:text-center px-4 relative z-20 flex flex-col justify-center min-h-full h-full">
+      <BackgroundBeamsWithCollision
+        className="min-h-[40vh] md:min-h-[60vh] pt-2 md:pt-8 pb-4 md:pb-12"
+      >
+        <div className="max-w-6xl mx-auto text-left md:text-center px-4 relative z-20 flex flex-col min-h-full h-full justify-start md:justify-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -323,7 +376,15 @@ export default function BankLoanCalculator() {
               hàng tháng, lập kế hoạch tài chính hiệu quả
             </p>
             <Button
-              onClick={scrollToForm}
+              id="btn-hero-calculate"
+              onClick={() => {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push({
+                  event: 'button_click',
+                  button_name: 'btn-hero-calculate'
+                });
+                scrollToForm();
+              }}
               size="lg"
               className="bg-primary-blue hover:bg-primary-blue-dark text-white px-8 md:px-10 py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
             >
@@ -614,7 +675,15 @@ export default function BankLoanCalculator() {
 
             <div className="text-center mt-8 md:mt-12">
               <Button
-                onClick={calculateLoan}
+                id="btn-form-calculate"
+                onClick={() => {
+                  window.dataLayer = window.dataLayer || [];
+                  window.dataLayer.push({
+                    event: 'button_click',
+                    button_name: 'btn-form-calculate'
+                  });
+                  calculateLoan();
+                }}
                 size="lg"
                 className="bg-primary-blue hover:bg-primary-blue-dark text-white px-8 md:px-12 py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl"
               >
@@ -670,7 +739,22 @@ export default function BankLoanCalculator() {
                   {/* Cụm nút: phải trên desktop, dưới trên mobile */}
                   <div className="flex flex-wrap gap-2 w-auto justify-end mt-2 lg:mt-0">
                     <Button
-                      onClick={handleDownloadImage}
+                      id="btn-download-image"
+                      onClick={() => {
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                          event: 'button_click',
+                          button_name: 'btn-download-image',
+                          loan_amount: loanAmount,
+                          interest_rate: interestRate,
+                          loan_term: loanTerm,
+                          loan_type: loanType,
+                          bank: bank,
+                          banker_name: bankerName,
+                          contact_info: contactInfo
+                        });
+                        handleDownloadImage();
+                      }}
                       size="sm"
                       variant="outline"
                       className="border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white text-xs px-2 md:px-3 h-8 md:h-9 min-w-16"
@@ -679,7 +763,22 @@ export default function BankLoanCalculator() {
                       Ảnh
                     </Button>
                     <Button
-                      onClick={handleExportSheets}
+                      id="btn-download-excel"
+                      onClick={() => {
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                          event: 'button_click',
+                          button_name: 'btn-download-excel',
+                          loan_amount: loanAmount,
+                          interest_rate: interestRate,
+                          loan_term: loanTerm,
+                          loan_type: loanType,
+                          bank: bank,
+                          banker_name: bankerName,
+                          contact_info: contactInfo
+                        });
+                        handleExportSheets();
+                      }}
                       size="sm"
                       variant="outline"
                       className="border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white text-xs px-2 md:px-3 h-8 md:h-9 min-w-16"
@@ -688,7 +787,22 @@ export default function BankLoanCalculator() {
                       Excel
                     </Button>
                     <Button
-                      onClick={handleCopyURL}
+                      id="btn-copy-link"
+                      onClick={() => {
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                          event: 'button_click',
+                          button_name: 'btn-copy-link',
+                          loan_amount: loanAmount,
+                          interest_rate: interestRate,
+                          loan_term: loanTerm,
+                          loan_type: loanType,
+                          bank: bank,
+                          banker_name: bankerName,
+                          contact_info: contactInfo
+                        });
+                        handleCopyURL();
+                      }}
                       size="sm"
                       variant="outline"
                       className="border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white text-xs px-2 md:px-3 h-8 md:h-9 min-w-16"
