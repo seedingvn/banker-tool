@@ -96,18 +96,34 @@ export default function BankLoanCalculator() {
   const searchParams = useSearchParams();
 
   const bankLogoMap: { [key: string]: string } = {
-    'HSBC': '/logos-bank/hsbc.png',
-    'VIB': '/logos-bank/vib.jpg',
-    'VietinBank': '/logos-bank/VietinBank.jpg',
-    'ACB': '/logos-bank/ACB.jpeg',
-    'Standard Chartered': '/logos-bank/standardchartered.png',
-    'OCB': '/logos-bank/OCB.jpg',
-    'TPBank': '/logos-bank/TPBank.jpg',
-    'MB Bank': '/logos-bank/MBBank.jpg',
-    'VP Bank': '/logos-bank/VPBank.jpg',
-    'HDBank': '/logos-bank/HDBank.jpg',
-    'Techcombank': '/logos-bank/Techcombank.jpg',
-    'UOB': '/logos-bank/UOB.jpg',
+    'hsbc': '/logos-bank/hsbc.png',
+    'vib': '/logos-bank/vib.jpg',
+    'vietinbank': '/logos-bank/vietinbank.jpg',
+    'acb': '/logos-bank/acb.jpeg',
+    'standardchartered': '/logos-bank/standardchartered.png',
+    'ocb': '/logos-bank/ocb.jpg',
+    'tpbank': '/logos-bank/tpbank.jpg',
+    'mbbank': '/logos-bank/mbbank.jpg',
+    'vpbank': '/logos-bank/vpbank.jpg',
+    'hdbank': '/logos-bank/hdbank.jpg',
+    'techcombank': '/logos-bank/techcombank.jpg',
+    'uob': '/logos-bank/uob.jpg',
+  };
+
+  // Map key chuẩn hóa sang tên đẹp
+  const bankNameMap: { [key: string]: string } = {
+    acb: 'ACB',
+    hdbank: 'HDBank',
+    mbbank: 'MB Bank',
+    ocb: 'OCB',
+    tpbank: 'TPBank',
+    techcombank: 'Techcombank',
+    uob: 'UOB',
+    vib: 'VIB',
+    vietinbank: 'VietinBank',
+    vpbank: 'VPBank',
+    hsbc: 'HSBC',
+    standardchartered: 'Standard Chartered',
   };
 
   // Format currency input
@@ -621,20 +637,20 @@ export default function BankLoanCalculator() {
                     <SelectValue placeholder="Chọn ngân hàng" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.keys(bankLogoMap).map((bankName) => {
-                      const logoUrl = bankLogoMap[bankName];
+                    {Object.keys(bankLogoMap).map((bankKey) => {
+                      const logoUrl = bankLogoMap[bankKey];
                       const isValidLogo = typeof logoUrl === 'string' && logoUrl.length > 0;
                       return (
-                        <SelectItem key={bankName} value={bankName} className="flex items-center gap-2">
+                        <SelectItem key={bankKey} value={bankKey} className="flex items-center gap-2">
                           <div className="flex items-center gap-2">
                             {isValidLogo ? (
-                              <Image src={logoUrl} alt={bankName} width={20} height={20} className="rounded bg-white border" />
+                              <img src={logoUrl} alt={bankNameMap[bankKey] || bankKey} width={20} height={20} style={{ borderRadius: 4, background: '#fff', border: '1px solid #eee' }} />
                             ) : (
                               <span className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-500">
-                                {bankName.charAt(0)}
+                                {bankNameMap[bankKey]?.charAt(0) || bankKey.charAt(0)}
                               </span>
                             )}
-                            <span>{bankName}</span>
+                            <span>{bankNameMap[bankKey] || bankKey}</span>
                           </div>
                         </SelectItem>
                       );
@@ -744,7 +760,7 @@ export default function BankLoanCalculator() {
                         Kết Quả Tính Lãi Vay Ngân Hàng
                       </h2>
                       <p className="text-xs md:text-sm lg:text-base text-gray-600 text-left">
-                        Ngân hàng: <span className="font-semibold text-primary-blue">{bank}</span> | Banker:{" "}
+                        Ngân hàng: <span className="font-semibold text-primary-blue">{bankNameMap[bank] || bank}</span> | Banker:{" "}
                         <span className="font-semibold text-primary-blue">{bankerName}</span> | Liên hệ:{" "}
                         <span className="font-semibold text-primary-blue">{contactInfo}</span>
                       </p>
