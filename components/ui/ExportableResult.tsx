@@ -49,18 +49,32 @@ export const ExportableResult = React.forwardRef<HTMLDivElement, ExportableResul
     const loanTypeName = loanTypeMap[loanType] || loanType;
 
     const bankLogoMap: { [key: string]: string } = {
-      'HSBC': '/logos-bank/hsbc.png',
-      'VIB': '/logos-bank/vib.jpg',
-      'VietinBank': '/logos-bank/VietinBank.jpg',
-      'ACB': '/logos-bank/acb.jpeg',
-      'Standard Chartered': '/logos-bank/standardchartered.png',
-      'OCB': '/logos-bank/ocb.jpg',
-      'TPBank': '/logos-bank/tpbank.jpg',
-      'MB Bank': '/logos-bank/mbbank.jpg',
-      'VP Bank': '/logos-bank/vpbank.jpg',
-      'HDBank': '/logos-bank/hdbank.jpg',
-      'Techcombank': '/logos-bank/techcombank.jpg',
-      'UOB': '/logos-bank/uob.jpg',
+      acb: '/logos-bank/acb.jpeg',
+      hdbank: '/logos-bank/hdbank.jpg',
+      mbbank: '/logos-bank/mbbank.jpg',
+      ocb: '/logos-bank/ocb.jpg',
+      tpbank: '/logos-bank/tpbank.jpg',
+      techcombank: '/logos-bank/techcombank.jpg',
+      uob: '/logos-bank/uob.jpg',
+      vib: '/logos-bank/vib.jpg',
+      vietinbank: '/logos-bank/vietinbank.jpg',
+      vpbank: '/logos-bank/vpbank.jpg',
+      hsbc: '/logos-bank/hsbc.png',
+      standardchartered: '/logos-bank/standardchartered.png',
+    };
+    const bankNameMap: { [key: string]: string } = {
+      acb: 'ACB',
+      hdbank: 'HDBank',
+      mbbank: 'MB Bank',
+      ocb: 'OCB',
+      tpbank: 'TPBank',
+      techcombank: 'Techcombank',
+      uob: 'UOB',
+      vib: 'VIB',
+      vietinbank: 'VietinBank',
+      vpbank: 'VPBank',
+      hsbc: 'HSBC',
+      standardchartered: 'Standard Chartered',
     };
 
     return (
@@ -69,13 +83,13 @@ export const ExportableResult = React.forwardRef<HTMLDivElement, ExportableResul
           <div className="flex flex-row items-center flex-1 min-w-0">
             {bank && bankLogoMap[bank] && (
               <div className="flex-shrink-0 flex items-center justify-center mr-4">
-                <img src={bankLogoMap[bank]} alt={bank} width={56} height={56} style={{width: 56, height: 56, objectFit: 'contain', boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)', border: '2px solid #e5e7eb', borderRadius: 12}} />
+                <img src={bankLogoMap[bank]} alt={bankNameMap[bank] || bank} width={56} height={56} style={{width: 56, height: 56, objectFit: 'contain', boxShadow: '0 4px 24px 0 rgba(0,0,0,0.12)', border: '2px solid #e5e7eb', borderRadius: 12}} />
               </div>
             )}
             <div className="min-w-0">
               <span className="text-2xl font-bold block truncate">Kết Quả Tính Lãi Vay Ngân Hàng</span>
               <div className="text-sm text-gray-600 mt-1 truncate">
-                Ngân hàng: <span className="font-semibold text-blue-600">{bank}</span>
+                Ngân hàng: <span className="font-semibold text-blue-600">{bankNameMap[bank] || bank}</span>
                 {bankerName && <span> | Banker: <span className="font-semibold text-blue-600">{bankerName}</span></span>}
                 {contactInfo && <span> | Liên hệ: <span className="font-semibold text-blue-600">{contactInfo}</span></span>}
               </div>
