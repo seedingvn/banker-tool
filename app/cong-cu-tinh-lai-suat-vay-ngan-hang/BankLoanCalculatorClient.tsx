@@ -266,7 +266,12 @@ export default function BankLoanCalculator() {
       const options = { quality: 1.0, pixelRatio: 2, style: { fontFamily: 'sans-serif' } };
       const dataUrl = await toPng(hiddenResultRef.current, options);
       // Tạo tên file theo rule
-      const clean = (str: string) => str?.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/đ/g, "d") || "";
+      const clean = (str: string) => str
+        ?.toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9]/g, '') || "";
       const formatMoney = (str: string) => {
         const num = parseInt(str.replace(/[^\d]/g, ""), 10);
         if (!num) return "";
@@ -287,7 +292,12 @@ export default function BankLoanCalculator() {
   };
 
   // Đặt tên file export giống logic file ảnh
-  const clean = (str: string) => str?.toLowerCase().replace(/[^a-z0-9]/g, "").replace(/đ/g, "d") || "";
+  const clean = (str: string) => str
+    ?.toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]/g, '') || "";
   const formatMoney = (str: string) => {
     const num = parseInt(str.replace(/[^\d]/g, ""), 10);
     if (!num) return "";
