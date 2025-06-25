@@ -94,6 +94,7 @@ export default function BankLoanCalculator() {
   const [year, setYear] = useState<number | null>(null)
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [formError, setFormError] = useState("");
 
   const bankLogoMap: { [key: string]: string } = {
     'standardchartered': '/logos-bank/standardchartered.png',
@@ -223,6 +224,12 @@ export default function BankLoanCalculator() {
 
   // Sửa hàm calculateLoan để giữ vị trí scroll khi cập nhật URL
   const calculateLoan = () => {
+    // Validate các trường bắt buộc
+    if (!loanAmount.replace(/[^\d]/g, "") || !interestRate || !loanTerm || !loanType) {
+      setFormError("Vui lòng điền đầy đủ Số tiền vay, Lãi suất, Thời hạn vay và Loại hình vay để tính toán.");
+      return;
+    }
+    setFormError("");
     const calc = calculateLoanFromParams(
       loanAmount.replace(/[^\d]/g, ""),
       interestRate,
@@ -684,7 +691,7 @@ export default function BankLoanCalculator() {
                 </Label>
                 <Input
                   id="banker-name"
-                  placeholder="Banker xinh gái"
+                  placeholder="Banker trai xinh gái đẹp"
                   value={bankerName}
                   onChange={(e) => setBankerName(e.target.value)}
                   className="border-2 border-gray-200 focus:border-primary-blue transition-colors h-10 md:h-14 text-sm md:text-lg font-medium rounded-xl placeholder:text-gray-400"
@@ -722,7 +729,14 @@ export default function BankLoanCalculator() {
                   window.dataLayer = window.dataLayer || [];
                   window.dataLayer.push({
                     event: 'button_click',
-                    button_name: 'btn-form-calculate'
+                    button_name: 'btn-form-calculate',
+                    loan_amount: loanAmount,
+                    interest_rate: interestRate,
+                    loan_term: loanTerm,
+                    loan_type: loanType,
+                    bank: bank,
+                    banker_name: bankerName,
+                    contact_info: contactInfo
                   });
                   calculateLoan();
                 }}
@@ -732,6 +746,9 @@ export default function BankLoanCalculator() {
                 <Calculator className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                 Tính Toán Ngay
               </Button>
+              {formError && (
+                <div className="mt-3 text-red-600 text-sm font-medium animate-pulse">{formError}</div>
+              )}
             </div>
           </motion.div>
         </div>
