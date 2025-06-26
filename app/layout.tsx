@@ -16,7 +16,7 @@ const inter = Inter({
 
 // --- METADATA ĐÃ ĐƯỢC TỐI ƯU SEO ---
 
-const siteUrl = "https://bankertool.online";
+const siteUrl = "https://www.bankertool.online/cong-cu-tinh-lai-suat-vay-ngan-hang";
 
 export const metadata: Metadata = {
   // TỐI ƯU: Title đã rất tốt, giữ nguyên. Chứa từ khóa chính + lợi ích + thương hiệu.
