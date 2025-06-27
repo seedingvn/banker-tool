@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -47,6 +47,7 @@ import { toPng } from 'html-to-image';
 import { ExportableResult } from '@/components/ui/ExportableResult';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from "next/navigation";
+import jsPDF from 'jspdf';
 
 interface LoanCalculation {
   monthlyPayment: number
@@ -298,21 +299,76 @@ export default function BankLoanCalculator() {
     }
   };
 
-  // Đặt tên file export giống logic file ảnh
-  const clean = (str: string) => str
-    ?.toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/đ/g, 'd')
-    .replace(/[^a-z0-9]/g, '') || "";
-  const formatMoney = (str: string) => {
-    const num = parseInt(str.replace(/[^\d]/g, ""), 10);
-    if (!num) return "";
-    if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
-    if (num >= 1000000) return Math.round(num/1000000) + "tr";
-    if (num >= 1000) return Math.round(num/1000) + "k";
-    return num+"";
+  // State cho export PDF
+  const [pdfPages, setPdfPages] = useState<any[]>([]);
+  const pdfRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+  // Hàm xuất PDF: chia 12 kỳ/page, render ẩn ExportableResult, chụp từng ref
+  const handleDownloadPDF = () => {
+    if (!calculation) {
+      alert("Không tìm thấy nội dung để tải PDF.");
+      return;
+    }
+    const pageSize = 12;
+    const totalPages = Math.ceil(calculation.schedule.length / pageSize);
+    const pages = [];
+    for (let i = 0; i < totalPages; i++) {
+      pages.push(calculation.schedule.slice(i * pageSize, (i + 1) * pageSize));
+    }
+    setPdfPages(pages);
+    setIsExportingPDF(true);
   };
+
+  // useEffect để chụp ảnh sau khi render xong
+  useEffect(() => {
+    const exportPDF = async () => {
+      if (!isExportingPDF || pdfPages.length === 0) return;
+      try {
+        const exportableProps = {
+          calculation,
+          loanAmount,
+          interestRate,
+          loanTerm,
+          loanType,
+          bank,
+          bankerName,
+          contactInfo,
+        };
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [850, 850] });
+        for (let i = 0; i < pdfPages.length; i++) {
+          const ref = pdfRefs.current[i];
+          if (ref) {
+            const dataUrl = await toPng(ref, { quality: 1, pixelRatio: 2, style: { fontFamily: 'sans-serif' } });
+            const rect = ref.getBoundingClientRect();
+            const pageHeight = rect.height;
+            if (i > 0) pdf.addPage([850, pageHeight], 'landscape');
+            pdf.addImage(dataUrl, 'PNG', 0, 0, 850, pageHeight);
+          }
+        }
+        // Đặt tên file giống logic ảnh
+        const clean = (str: string) => str?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') || "";
+        const formatMoney = (str: string) => {
+          const num = parseInt(str.replace(/[^\d]/g, ""), 10);
+          if (!num) return "";
+          if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
+          if (num >= 1000000) return Math.round(num/1000000) + "tr";
+          if (num >= 1000) return Math.round(num/1000) + "k";
+          return num+"";
+        };
+        const fileName = `${clean(bankerName)}-${clean(bank)}-${loanTerm}thang-${formatMoney(loanAmount)}.pdf`;
+        pdf.save(fileName);
+      } catch (error) {
+        alert("Đã có lỗi khi xuất PDF. Vui lòng thử lại!\n" + (error instanceof Error ? error.message : ''));
+        console.error(error);
+      } finally {
+        setPdfPages([]);
+        setIsExportingPDF(false);
+      }
+    };
+    exportPDF();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdfPages, isExportingPDF]);
 
   const handleExportSheets = () => {
     if (!calculation) return
@@ -397,6 +453,17 @@ export default function BankLoanCalculator() {
     "Standard Chartered": {rate: 6.3, max: 75, term: 25},
     "Sacombank": {rate: 6.5, max: 90, term: 35},
     "Techcombank": {rate: 6.7, max: 80, term: 35},
+  };
+
+  // Định nghĩa clean và formatMoney ở đầu component để dùng cho mọi hàm
+  const clean = (str: string) => str?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') || "";
+  const formatMoney = (str: string) => {
+    const num = parseInt(str.replace(/[^\d]/g, ""), 10);
+    if (!num) return "";
+    if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
+    if (num >= 1000000) return Math.round(num/1000000) + "tr";
+    if (num >= 1000) return Math.round(num/1000) + "k";
+    return num+"";
   };
 
   return (
@@ -726,6 +793,12 @@ export default function BankLoanCalculator() {
               <Button
                 id="btn-form-calculate"
                 onClick={() => {
+                  // Validate các trường bắt buộc
+                  if (!loanAmount.replace(/[^\d]/g, "") || !interestRate || !loanTerm || !loanType) {
+                    setFormError("Vui lòng điền đầy đủ Số tiền vay, Lãi suất, Thời hạn vay và Loại hình vay để tính toán.");
+                    return;
+                  }
+                  setFormError("");
                   window.dataLayer = window.dataLayer || [];
                   window.dataLayer.push({
                     event: 'button_click',
@@ -789,9 +862,7 @@ export default function BankLoanCalculator() {
                         Kết Quả Tính Lãi Vay Ngân Hàng
                       </h2>
                       <p className="text-xs md:text-sm lg:text-base text-gray-600 text-left">
-                        Ngân hàng: <span className="font-semibold text-primary-blue">{bankNameMap[bank] || bank}</span> | Banker:{" "}
-                        <span className="font-semibold text-primary-blue">{bankerName}</span> | Liên hệ:{" "}
-                        <span className="font-semibold text-primary-blue">{contactInfo}</span>
+                        Ngân hàng: <span className="font-semibold text-primary-blue">{bankNameMap[bank] || bank}</span> | Banker: <span className="font-semibold text-primary-blue">{bankerName}</span> | Liên hệ: <span className="font-semibold text-primary-blue">{contactInfo}</span>
                       </p>
                     </div>
                   </div>
@@ -869,8 +940,53 @@ export default function BankLoanCalculator() {
                       {copied ? <CheckIcon className="mr-1 h-3 w-3" /> : <LinkIcon className="mr-1 h-3 w-3" />}
                       {copied ? "Đã sao chép" : "Link"}
                     </Button>
+                    <Button
+                      id="btn-download-pdf"
+                      onClick={() => {
+                        window.dataLayer = window.dataLayer || [];
+                        window.dataLayer.push({
+                          event: 'button_click',
+                          button_name: 'btn-download-pdf',
+                          loan_amount: loanAmount,
+                          interest_rate: interestRate,
+                          loan_term: loanTerm,
+                          loan_type: loanType,
+                          bank: bank,
+                          banker_name: bankerName,
+                          contact_info: contactInfo
+                        });
+                        handleDownloadPDF();
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-primary-blue text-primary-blue hover:bg-primary-blue hover:text-white text-xs px-2 md:px-3 h-8 md:h-9 min-w-16"
+                    >
+                      <Download className="mr-1 h-3 w-3" />
+                      PDF
+                    </Button>
                   </div>
                 </div>
+                {/* Thông báo gợi ý khi thời hạn vay > 24 tháng */}
+                {Number(loanTerm) > 24 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="mt-4 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <p className="text-blue-800 text-sm md:text-base font-medium mb-1">
+                          💡 Gợi ý cho bạn
+                        </p>
+                        <p className="text-blue-700 text-xs md:text-sm">
+                          Với thời hạn vay {loanTerm} tháng, bảng chi tiết sẽ khá dài. 
+                          <strong> Bạn nên tải file PDF</strong> để xem được chất lượng hình ảnh tốt nhất và dễ dàng chia sẻ với đối tác.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
 
               {/* Layout 2 bảng cùng 1 dòng */}
@@ -1341,6 +1457,39 @@ export default function BankLoanCalculator() {
         <div>© 2025 BankerTool. Tất cả bản quyền được bảo lưu.</div>
         <div>Đối với quan hệ đối tác quảng cáo hoặc đóng góp, vui lòng liên hệ với chúng tôi qua email: <a href="mailto:support@bankertool.online" className="underline hover:text-primary-blue">support@bankertool.online</a></div>
       </div>
+
+      {/* Trong JSX, render các ExportableResult ẩn để chụp PDF */}
+      {pdfPages.length > 0 && calculation && (
+        <div style={{ position: 'fixed', left: -99999, top: 0, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
+          {pdfPages.map((pageSchedule, idx) => (
+            <div
+              key={idx}
+              ref={el => { pdfRefs.current[idx] = el; }}
+              style={{ width: 'fit-content', minWidth: 0, maxWidth: '100vw' }}
+            >
+              <ExportableResult
+                {...{
+                  calculation: {
+                    ...calculation,
+                    schedule: pageSchedule,
+                    monthlyPayment: calculation.monthlyPayment ?? 0,
+                    totalInterest: calculation.totalInterest ?? 0,
+                    totalPayment: calculation.totalPayment ?? 0,
+                  },
+                  loanAmount,
+                  interestRate,
+                  loanTerm,
+                  loanType,
+                  bank,
+                  bankerName,
+                  contactInfo,
+                  hideHeader: idx > 0,
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
