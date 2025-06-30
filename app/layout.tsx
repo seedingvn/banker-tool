@@ -20,7 +20,7 @@ const siteUrl = "https://www.bankertool.online/cong-cu-tinh-lai-suat-vay-ngan-ha
 
 export const metadata: Metadata = {
   // TỐI ƯU: Title đã rất tốt, giữ nguyên. Chứa từ khóa chính + lợi ích + thương hiệu.
-  title: "Công Cụ Tính Lãi Suất Vay Ngân Hàng Online Chính Xác | BankerTool.Online", 
+  title: "Công Cụ Tính Lãi Suất Vay Ngân Hàng Online Chính Xác", 
   
   // TỐI ƯU: Viết lại mô tả để hấp dẫn và chứa nhiều từ khóa ngữ nghĩa hơn.
   description: "Sử dụng công cụ tính lãi suất vay ngân hàng online miễn phí và chính xác nhất. Hỗ trợ tính theo dư nợ gốc & giảm dần, giúp banker và người dùng lập kế hoạch trả nợ chi tiết.",
@@ -131,6 +131,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <SpeedInsights />
           <Analytics />
         </ThemeProvider>
+        {/* Footer với social links */}
+        <footer className="mt-8 text-center py-6 border-t border-gray-100 bg-white">
+          <div className="flex justify-center gap-4">
+            <a href="https://www.facebook.com/bankertool.online/" target="_blank" rel="noopener noreferrer">
+              <img src="/facebook-icon.svg" alt="Facebook" width={24} height={24} />
+            </a>
+            <a href="https://www.instagram.com/bankertool.online/" target="_blank" rel="noopener noreferrer">
+              <img src="/instagram-icon.svg" alt="Instagram" width={24} height={24} />
+            </a>
+            <a href="https://www.threads.com/@bankertool.online" target="_blank" rel="noopener noreferrer">
+              <img src="/threads-icon.svg" alt="Threads" width={24} height={24} />
+            </a>
+          </div>
+        </footer>
       </body>
     </html>
   )

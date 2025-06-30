@@ -468,6 +468,7 @@ export default function BankLoanCalculator() {
 
   return (
     <div className="min-h-screen bg-white font-inter">
+      <h1 className="sr-only">Công cụ tính lãi suất vay ngân hàng online</h1>
       {/* Hero Section */}
       <BackgroundBeamsWithCollision
         className="min-h-[40vh] md:min-h-[60vh] pt-2 md:pt-8 pb-4 md:pb-12"
