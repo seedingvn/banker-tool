@@ -6,6 +6,7 @@ import SchemaMarkup from '@/components/SchemaMarkup';
 import { ThemeProvider } from '@/components/theme-provider';
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -133,6 +134,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </ThemeProvider>
         {/* Footer với social links */}
         <footer className="mt-8 text-center py-6 border-t border-gray-100 bg-white">
+          {/* Chèn script socialcare ngay phía trên logo social */}
+          <Script src="https://socialcare.vn/widget/service.js?key=3iIxwIYvF8" strategy="afterInteractive" />
           <div className="flex justify-center gap-4">
             <a href="https://www.facebook.com/bankertool.online/" target="_blank" rel="noopener noreferrer">
               <img src="/facebook-icon.svg" alt="Facebook" width={24} height={24} />

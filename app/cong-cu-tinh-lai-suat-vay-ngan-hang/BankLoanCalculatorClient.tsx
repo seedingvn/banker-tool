@@ -348,14 +348,14 @@ export default function BankLoanCalculator() {
         }
         // Đặt tên file giống logic ảnh
         const clean = (str: string) => str?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').replace(/[^a-z0-9]/g, '') || "";
-        const formatMoney = (str: string) => {
-          const num = parseInt(str.replace(/[^\d]/g, ""), 10);
-          if (!num) return "";
-          if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
-          if (num >= 1000000) return Math.round(num/1000000) + "tr";
-          if (num >= 1000) return Math.round(num/1000) + "k";
-          return num+"";
-        };
+  const formatMoney = (str: string) => {
+    const num = parseInt(str.replace(/[^\d]/g, ""), 10);
+    if (!num) return "";
+    if (num >= 1000000000) return Math.round(num/1000000000) + "ty";
+    if (num >= 1000000) return Math.round(num/1000000) + "tr";
+    if (num >= 1000) return Math.round(num/1000) + "k";
+    return num+"";
+  };
         const fileName = `${clean(bankerName)}-${clean(bank)}-${loanTerm}thang-${formatMoney(loanAmount)}.pdf`;
         pdf.save(fileName);
       } catch (error) {
@@ -984,8 +984,8 @@ export default function BankLoanCalculator() {
                           Với thời hạn vay {loanTerm} tháng, bảng chi tiết sẽ khá dài. 
                           <strong> Bạn nên tải file PDF</strong> để xem được chất lượng hình ảnh tốt nhất và dễ dàng chia sẻ với đối tác.
                         </p>
-                      </div>
-                    </div>
+                  </div>
+                </div>
                   </motion.div>
                 )}
               </motion.div>
