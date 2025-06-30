@@ -101,6 +101,7 @@ export default function RootLayout({
       <head>
         <meta name="twitter:image" content="https://bankertool.online/logo.png" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta property="og:image" content="https://www.bankertool.online/og-image.png" />
         
         {/* Google Tag Manager */}
         <script
