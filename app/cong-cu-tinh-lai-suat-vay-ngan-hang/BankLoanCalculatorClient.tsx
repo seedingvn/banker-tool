@@ -529,7 +529,7 @@ export default function BankLoanCalculator() {
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
-                  Xuất báo cáo PNG, Excel
+                  Xuất báo cáo PNG, PDF
                 </li>
                 <li className="flex items-start">
                   <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
