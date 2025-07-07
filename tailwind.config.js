@@ -17,9 +17,10 @@ module.exports = {
       },
     },
     extend: {
+      // --- SỬA LỖI Ở ĐÂY ---
       fontFamily: {
-        inter: ["Inter", "sans-serif"],
-        sans: ["Inter", "sans-serif"],
+        // Thay vì gọi tên font "Inter", chúng ta sẽ gọi biến CSS đã định nghĩa trong layout.tsx
+        sans: ["var(--font-sans)", "sans-serif"],
       },
       colors: {
         "primary-blue": "#0070FF",
@@ -66,12 +67,12 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: 0 },
+          from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          to: { height: "0" },
         },
         "fade-in": {
           "0%": { opacity: 0, transform: "translateY(20px)" },
