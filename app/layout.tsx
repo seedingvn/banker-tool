@@ -1,22 +1,23 @@
 import type React from "react"
 import { Inter } from "next/font/google"
 import type { Metadata, Viewport } from "next"
-import Script from "next/script" // Import component Script của Next.js
+import Script from "next/script"
 import { ThemeProvider } from '@/components/theme-provider'
 import SchemaMarkup from '@/components/SchemaMarkup'
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/react" // Import từ /react
+import { Analytics } from "@vercel/analytics/react"
 import "./globals.css"
 
+// SỬA LỖI 1: Đổi tên biến '--font-inter' thành '--font-sans'
+// Đây là quy ước chuẩn của Tailwind CSS để dễ dàng tích hợp.
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-sans",
 })
 
-// --- METADATA ĐÃ ĐƯỢC TỐI ƯU SEO ---
-// Giữ nguyên toàn bộ metadata của bạn vì nó đã rất tốt.
+// --- METADATA GIỮ NGUYÊN ---
 const siteUrl = "https://www.bankertool.online/cong-cu-tinh-lai-suat-vay-ngan-hang";
 
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     siteName: 'BankerTool',
     images: [
       {
-        url: `https://www.bankertool.online/og-image.png`,
+        url: `https://www.bankertool.online/og-image.png`, 
         width: 1200,
         height: 630,
         alt: 'Công cụ tính lãi suất vay ngân hàng online của BankerTool',
@@ -48,8 +49,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Công Cụ Tính Lãi Suất Vay Ngân Hàng Online | BankerTool",
     description: "Dễ dàng tính toán khoản vay, xem lịch trả nợ chi tiết và lập kế hoạch tài chính với công cụ từ BankerTool. Miễn phí cho banker và người dùng!",
-    images: [`https://www.bankertool.online/og-image.png`],
-    creator: '@YourTwitterHandle',
+    images: [`https://www.bankertool.online/og-image.png`], 
+    creator: '@YourTwitterHandle', 
   },
   robots: {
     index: true,
@@ -73,20 +74,19 @@ export const viewport: Viewport = {
     themeColor: '#ffffff',
 }
 
-// === SỬA LỖI Ở ĐÂY: Cấu trúc RootLayout đúng chuẩn ===
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
+    // SỬA LỖI 2: Áp dụng biến font vào thẻ `html`
     <html lang="vi" className={inter.variable} suppressHydrationWarning>
       <head>
-        {/* Schema Markup được đặt trong head */}
         <SchemaMarkup />
       </head>
-      <body className={inter.className}>
-        {/* GTM noscript đặt ngay sau body */}
+      {/* SỬA LỖI 3: Xóa className khỏi thẻ `body` */}
+      <body>
         <noscript>
           <iframe
             src={`https://www.googletagmanager.com/ns.html?id=GTM-5QB8V2XJ`}
@@ -107,7 +107,6 @@ export default function RootLayout({
           <Analytics />
         </ThemeProvider>
         
-        {/* Footer với social links */}
         <footer className="mt-8 text-center py-6 border-t border-gray-100 bg-white">
           <div className="flex justify-center gap-4">
             <a href="https://www.facebook.com/bankertool.online/" target="_blank" rel="noopener noreferrer">
@@ -122,7 +121,6 @@ export default function RootLayout({
           </div>
         </footer>
 
-        {/* --- SỬA LỖI Ở ĐÂY: Dùng component <Script> của Next.js cho GTM và các script khác --- */}
         <Script
           id="gtm-script"
           strategy="afterInteractive"
