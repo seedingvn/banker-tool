@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const { fontFamily } = require("tailwindcss/defaultTheme")
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -19,8 +21,8 @@ module.exports = {
     extend: {
       // --- SỬA LỖI Ở ĐÂY ---
       fontFamily: {
-        // Thay vì gọi tên font "Inter", chúng ta sẽ gọi biến CSS đã định nghĩa trong layout.tsx
-        sans: ["var(--font-sans)", "sans-serif"],
+        // Chúng ta bảo Tailwind hãy dùng biến --font-sans làm font chữ mặc định
+        sans: ["var(--font-sans)", ...fontFamily.sans],
       },
       colors: {
         "primary-blue": "#0070FF",
